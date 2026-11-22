@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kebun Berhantu</string>
+    <!-- The app simply opens this web address, so every update you push to GitHub Pages
+         shows up in the installed app automatically. Change it to your own GitHub Pages link. -->
+    <string name="game_url">https://bazliamin90.github.io/kebun-berhantu/</string>
+</resources>
