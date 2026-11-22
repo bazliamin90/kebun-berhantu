@@ -17,7 +17,7 @@
 <style>
 html,body{margin:0;height:100%;background:#0b0816;color:#f3e9d2;font-family:'Press Start 2P',monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #cv{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;background:#000}
-#hud{position:fixed;left:6px;right:6px;top:6px;height:30px;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:8px;pointer-events:none;z-index:2}
+#hud{position:fixed;left:48px;right:6px;top:6px;height:30px;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:8px;pointer-events:none;z-index:2}
 .chips{display:flex;gap:4px;flex:1;min-width:0}
 .chips.r{justify-content:flex-end}
 .chip{display:flex;align-items:center;gap:4px;background:rgba(10,6,24,.78);padding:4px 5px;border:2px solid #000;box-shadow:0 0 0 1px #3b2d60;white-space:nowrap;min-width:0}
@@ -67,6 +67,8 @@ td.n{text-align:right;color:#ffd166}
 #joy.idle{opacity:.55}
 #knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;background:rgba(255,209,102,.6);border:3px solid #000;border-radius:50%}
 #dodgeBtn{position:fixed;right:max(118px,calc(env(safe-area-inset-right) + 96px));bottom:max(18px,env(safe-area-inset-bottom));width:66px;height:66px;border-radius:50%;font-size:8px;z-index:6;display:none;margin:0;touch-action:none}
+#pauseBtn{position:fixed;left:6px;top:6px;width:36px;height:30px;padding:0;margin:0;font-size:10px;z-index:7;display:none}
+#pause{z-index:12}
 #dashBtn{position:fixed;right:max(22px,env(safe-area-inset-right));bottom:max(30px,env(safe-area-inset-bottom));width:84px;height:84px;border-radius:50%;font-size:10px;z-index:6;display:none;margin:0;touch-action:none}
 #intro.scr{background:transparent;cursor:pointer}
 .introWrap{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6vh 10px 3vh;box-sizing:border-box;pointer-events:none}
@@ -99,6 +101,7 @@ td.n{text-align:right;color:#ffd166}
 <canvas id="cv"></canvas>
 <div id="hud" style="display:none"><div class="chips" id="chipsL"></div><div id="timer">1:00</div><div class="chips r" id="chipsR"></div></div>
 <div id="joy"><div id="knob"></div></div>
+<button id="pauseBtn" class="alt" title="Menu / Jeda">II</button>
 <button id="dashBtn" class="red">LARI!</button>
 <button id="dodgeBtn" class="alt">ELAK</button>
 
@@ -107,7 +110,7 @@ td.n{text-align:right;color:#ffd166}
   <div><div class="bigTitle"><span>KEBUN</span><span>BERHANTU</span></div>
   <div class="tag">Kutip buah. Elak hantu. Jangan menangis.</div></div>
   <div style="text-align:center"><div class="tap">TAP TO START</div>
-  <div class="credit" style="margin-top:10px">by Bazli · v1.1</div></div>
+  <div class="credit verBy" style="margin-top:10px">by Bazli · v1.1</div></div>
 </div></div>
 
 <!-- LOADING -->
@@ -115,7 +118,7 @@ td.n{text-align:right;color:#ffd166}
   <img id="loadImg" class="spin" alt="">
   <div class="sub" id="loadMsg" style="min-height:30px;margin-top:10px">Memuatkan kebun...</div>
   <div class="bar"><div id="loadFill"></div></div>
-  <div class="small" style="margin-top:10px">v1.1</div>
+  <div class="small verOnly" style="margin-top:10px">v1.1</div>
 </div></div>
 
 <!-- MAIN MENU -->
@@ -129,7 +132,7 @@ td.n{text-align:right;color:#ffd166}
     <button id="tutBtn" class="alt">TUTORIAL</button>
     <button id="optBtn" class="alt">OPTION</button>
   </div>
-  <div class="credit2">by Bazli · v1.1</div>
+  <div class="credit2 verBy">by Bazli · v1.1</div>
 </div></div>
 
 <!-- MULTIPLAYER -->
@@ -197,6 +200,19 @@ td.n{text-align:right;color:#ffd166}
   <div class="row timeRow" id="soloTimes"></div>
   <div class="status" id="soloBest"></div>
   <div class="row"><button id="soloGoBtn">MULA!</button><button class="red backBtn">KEMBALI</button></div>
+</div></div>
+
+<!-- PAUSE (in-game menu) -->
+<div id="pause" class="overlay"><div class="panel menuPanel">
+  <h1 style="font-size:16px">JEDA</h1>
+  <div class="sub" id="pauseWho">Permainan dijeda.</div>
+  <div class="col">
+    <button id="resumeBtn">SAMBUNG</button>
+  </div>
+  <div class="optRow"><span>BUNYI<br><span class="small">Sound</span></span><button id="pMute" class="alt">ON</button></div>
+  <div class="optRow"><span>BUTANG SKRIN<br><span class="small">On-screen buttons</span></span><button id="pCtl" class="alt">AUTO</button></div>
+  <div class="row" style="margin-top:10px"><button id="quitBtn" class="red">KELUAR KE MENU</button></div>
+  <div class="small" style="text-align:center" id="pauseHint">Esc / P untuk sambung</div>
 </div></div>
 
 <!-- LOBBY -->
@@ -556,7 +572,9 @@ const SFX={
 };
 try{muted=localStorage.getItem('kb_mute')==='1';}catch(e){}
 document.getElementById('mute').textContent=muted?'OFF':'ON';
-document.getElementById('mute').onclick=e=>{muted=!muted;e.target.textContent=muted?'OFF':'ON';try{localStorage.setItem('kb_mute',muted?'1':'0');}catch(_){}au();if(!muted)SFX.pick();};
+function setMuteLabels(){['mute','pMute'].forEach(id=>{const b=document.getElementById(id);if(b)b.textContent=muted?'OFF':'ON';});}
+function toggleMute(){muted=!muted;setMuteLabels();try{localStorage.setItem('kb_mute',muted?'1':'0');}catch(_){}au();if(!muted)SFX.pick();}
+document.getElementById('mute').onclick=toggleMute;document.getElementById('pMute').onclick=toggleMute;setMuteLabels();
 
 // ================= STATE =================
 let roomNs=null,net=null;
@@ -615,7 +633,6 @@ async function initNet(){
  if(roomNs){st.textContent='Online sedia. Pilih HOST atau JOIN. (Online ready)';['hostBtn','joinBtn','mpHostBtn','mpJoinBtn'].forEach(id=>$(id).disabled=false);}
  else{st.textContent=window.claude?'Main online tak tersedia di sini — main dengan bot sahaja. (Online play unavailable in this view)':'Main online perlukan internet. Semak sambungan & buka semula menu ini. (Online play needs internet)';st.classList.add('bad');}
 }
-initNet();
 
 function roomPeers(){
  if(!net)return[];let ps;try{ps=net.api.peers();}catch(e){return[];}
@@ -627,7 +644,7 @@ async function openNet(c,asHost){
 }
 // ---- Standalone multiplayer (outside Claude): WebRTC via PeerJS, same interface as the room capability ----
 // The host's browser is the hub: it collects everyone's presence and re-broadcasts the whole set ~20x/second.
-const APP_VERSION='1.1';
+const APP_VERSION='1.2';
 function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=rej;document.head.appendChild(el);});}
 async function makePeerRoom(){
  if(!window.Peer)await loadScript('https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js');
@@ -717,9 +734,51 @@ window.kbBack=function(){
  if(on('tut')||on('opt')||on('single')){showOv('menu');return true;}
  if(on('mp')){showOv('menu');return true;}
  if(on('lobby')||on('results')){toMenu();return true;}
- if(inGame())return true;
+ if(inGame()){togglePause();return true;}
  return false;
 };
+// ================= PAUSE =================
+// Anyone in the round can pause or resume. The host (or solo game) owns the pause state; other players
+// send requests through presence counters (pq = pause, rq = resume) and everyone follows the snapshot.
+let myPq=0,myRq=0;const seenReq=new Map();
+function isPaused(){return!!(snap&&snap.pz>=0&&(snap.ph==='play'||snap.ph==='count'));}
+function requestPause(){
+ if(!inGame()||isPaused())return;const mi=myIdx();if(mi<0)return;
+ if(sim){sim.pz=mi;snap=buildSnap(sim);}else pres({pq:++myPq});
+ SFX.beep();
+}
+function requestResume(){
+ if(!isPaused())return;
+ if(sim){sim.pz=-1;snap=buildSnap(sim);}else pres({rq:++myRq});
+ SFX.go();
+}
+function togglePause(){au();if(isPaused())requestResume();else requestPause();}
+function hostPauseRequests(){
+ const live=sim.ph==='play'||sim.ph==='count';
+ for(const p of roomPeers()){if(p.sameTab)continue;const i=sim.r.indexOf(p.peer);
+  const pq=+p.presence.pq||0,rq=+p.presence.rq||0,o=seenReq.get(p.peer);seenReq.set(p.peer,{pq,rq});
+  if(!o||i<0||!live)continue;
+  if(pq>o.pq&&sim.pz<0)sim.pz=i;
+  if(rq>o.rq&&sim.pz>=0)sim.pz=-1;}
+ // whoever paused left the room: carry on
+ if(sim.pz>=0){const id=sim.r[sim.pz];if(id!==myKey()&&!isBot(id)&&!roomPeers().some(p=>p.peer===id))sim.pz=-1;}
+}
+function updatePauseUI(mi){
+ const ig=inGame();
+ $('pauseBtn').style.display=ig&&mi>=0?'block':'none';
+ const on=ig&&isPaused();
+ $('pause').classList.toggle('on',on);
+ if(on){const pz=snap.pz,who=pz===mi?'kamu':((snap.nm&&snap.nm[pz])||'pemain');
+  const t=role==='solo'?'Permainan dijeda.':'Permainan dijeda oleh '+who+'. Semua pemain berhenti sekejap.';
+  if($('pauseWho').textContent!==t)$('pauseWho').textContent=t;
+  $('resumeBtn').style.display=mi>=0?'':'none';
+  $('quitBtn').textContent=role==='host'?'TAMATKAN BILIK':'KELUAR KE MENU';
+  $('pauseHint').textContent=lastInput==='pad'?'START untuk sambung':lastInput==='key'?'Esc / P untuk sambung':'';}
+}
+$('pauseBtn').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();requestPause();});
+$('resumeBtn').onclick=()=>requestResume();
+$('quitBtn').onclick=()=>{$('pause').classList.remove('on');toMenu();};
+
 function soloGame(){au();leaveNet();role='solo';snapPrev=null;code='';sim=newSim(['me','bot1','bot2','bot3']);snap=null;lastPh=null;}
 function leaveNet(){
  if(net){try{if(net.named)net.api.leave().catch(()=>{});else net.api.presence({g:null,code:null,s:null,h:null}).catch(()=>{});}catch(e){}}
@@ -850,7 +909,7 @@ function ghostPlan(T){
 function newSim(r){
  const n=r.length;
  return{ph:'count',cd:3200,tl:roundMs,r:r.slice(),nm:r.map(nameOf),sc:Array(n).fill(0),st:Array(n).fill(0),iv:Array(n).fill(0),sk:Array(n).fill(0),cn:Array(n).fill(0),
-  bots:r.map((id,i)=>isBot(id)?mkBot(i):null),gh:[],fr:[],nid:1,spawnT:200,L:newLamps(),lf:Array(n).fill(0),drop:Array(n).fill(0),tp:r.map(()=>[0,0,0]),tpseq:0,
+  pz:-1,bots:r.map((id,i)=>isBot(id)?mkBot(i):null),gh:[],fr:[],nid:1,spawnT:200,L:newLamps(),lf:Array(n).fill(0),drop:Array(n).fill(0),tp:r.map(()=>[0,0,0]),tpseq:0,
   pu:[],puT:PU_FIRST[0]+Math.random()*(PU_FIRST[1]-PU_FIRST[0]),pw:Array(n).fill(null),dur:0,kem:null,ev:[],evid:0,lastPu:-1,
   T:roundMs,plan:ghostPlan(roundMs)};
 }
@@ -925,6 +984,7 @@ function simTick(dt){
  const s=sim;const S=dt/1000;const pos=simPositions(s);
  for(let i=0;i<s.r.length;i++){s.st[i]=Math.max(0,s.st[i]-dt);s.iv[i]=Math.max(0,s.iv[i]-dt);
   if(s.drop[i]>0){s.drop[i]=Math.max(0,s.drop[i]-dt);const k=s.drop[i]/GD;s.lf[i]=Math.round(SKY*k*k);}}
+ if(s.pz>=0&&(s.ph==='count'||s.ph==='play'))return;   // paused: everything freezes
  if(s.ph==='count'){s.cd-=dt;if(s.cd<=0){s.cd=0;s.ph='play';spawnGhost(s,0,pos);spawnGhost(s,1,pos);}return;}
  if(s.ph!=='play')return;
  s.time=(s.time||0)+dt;
@@ -1093,7 +1153,7 @@ function repel(s,g){
    const vn=(g.vx*ddx+g.vy*ddy)/d;if(vn<0){g.vx-=vn*ddx/d;g.vy-=vn*ddy/d;}}}
 }
 function buildSnap(s){
- const o={ph:s.ph,T:s.T,cd:Math.round(s.cd),tl:Math.round(s.tl),r:s.r,nm:s.nm,sc:s.sc.slice(),st:s.st.map(Math.round),iv:s.iv.map(Math.round),sk:s.sk.slice(),cn:s.cn.slice(),
+ const o={ph:s.ph,pz:s.pz,T:s.T,cd:Math.round(s.cd),tl:Math.round(s.tl),r:s.r,nm:s.nm,sc:s.sc.slice(),st:s.st.map(Math.round),iv:s.iv.map(Math.round),sk:s.sk.slice(),cn:s.cn.slice(),
   L:s.L.map(l=>l.s),
   b:s.bots.map(b=>b?[Math.round(b.x),Math.round(b.y),b.d>0?1:0,b.mv?1:0,b.dodgeT>0?1:0]:0),
   g:s.gh.map(g=>{const a=[g.id,g.t,Math.round(g.x),Math.round(g.y),Math.round(g.z),g.dir>0?1:0,g.pause>0?1:0];if(g.t===4)a.push(g.gs,Math.round(g.gp*100),Math.round(g.wph*100),g.vic,Math.round(g.tx),Math.round(g.ty),Math.round(g.ux*100),Math.round(g.uy*100));return a;}),
@@ -1111,11 +1171,12 @@ const CTL_MODES=['auto','show','hide'],CTL_LBL={auto:'AUTO',show:'ON',hide:'OFF'
 let ctlMode='auto';try{const m=localStorage.getItem('kb_ctl');if(CTL_MODES.includes(m))ctlMode=m;}catch(e){}
 let lastInput=(matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0)?'touch':'key';
 function touchUI(){return ctlMode==='show'||(ctlMode==='auto'&&lastInput==='touch');}
-function setCtlLabel(){$('ctlBtn').textContent=CTL_LBL[ctlMode];}
-$('ctlBtn').onclick=()=>{ctlMode=CTL_MODES[(CTL_MODES.indexOf(ctlMode)+1)%3];try{localStorage.setItem('kb_ctl',ctlMode);}catch(e){}setCtlLabel();};
+function setCtlLabel(){$('ctlBtn').textContent=CTL_LBL[ctlMode];$('pCtl').textContent=CTL_LBL[ctlMode];}
+function cycleCtl(){ctlMode=CTL_MODES[(CTL_MODES.indexOf(ctlMode)+1)%3];try{localStorage.setItem('kb_ctl',ctlMode);}catch(e){}setCtlLabel();}
+$('ctlBtn').onclick=cycleCtl;$('pCtl').onclick=cycleCtl;
 setCtlLabel();
 const MOVE_KEYS=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight','KeyK'];
-addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(MOVE_KEYS.includes(e.code))lastInput='key';keys[e.code]=true;if(e.code==='Space'){wantDash=true;e.preventDefault();}if((e.code==='ShiftLeft'||e.code==='ShiftRight'||e.code==='KeyK')&&!e.repeat)wantDodge=true;if(e.code.startsWith('Arrow'))e.preventDefault();});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(MOVE_KEYS.includes(e.code))lastInput='key';keys[e.code]=true;if(e.code==='Space'){wantDash=true;e.preventDefault();}if((e.code==='Escape'||e.code==='KeyP')&&!e.repeat&&inGame()){togglePause();e.preventDefault();return;}if((e.code==='ShiftLeft'||e.code==='ShiftRight'||e.code==='KeyK')&&!e.repeat)wantDodge=true;if(e.code.startsWith('Arrow'))e.preventDefault();});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 const joy={on:false,id:null,ox:0,oy:0,vx:0,vy:0};
@@ -1151,6 +1212,7 @@ function pollPad(){
   if(x||y||d)lastInput='pad';
   if(dg)lastInput='pad';
   if(d&&!pad.dashHeld)wantDash=true;pad.dashHeld=d;
+  const st=b(9);if(st&&!pad.startHeld&&inGame())togglePause();pad.startHeld=st;
   if(dg&&!pad.dodgeHeld)wantDodge=true;pad.dodgeHeld=dg;
   pad.x=x;pad.y=y;break;}
 }
@@ -1189,6 +1251,7 @@ function update(dt,now){
   for(const r of remote.values()){if(typeof r.tx!=='number')continue;if(hyp(r.tx-r.x,r.ty-r.y)>40){r.x=r.tx;r.y=r.ty;}else{r.x+=(r.tx-r.x)*a;r.y+=(r.ty-r.y)*a;}}
  }
  if(role==='host'||role==='solo'){
+  if(sim&&role==='host')hostPauseRequests();
   if(sim){simTick(dt);snap=buildSnap(sim);}
   else if(role==='host'){const r=computeRoster();snap={ph:'lobby',r,nm:r.map(nameOf),T:roundMs};}
   snapPrev=null;snapT=now;
@@ -1211,7 +1274,8 @@ function update(dt,now){
  const mi=myIdx();
  if(role==='client'&&mi>=0&&snap.tp&&snap.tp[mi]){const t=snap.tp[mi];if(lastTp!==null&&t[0]!==lastTp){me.x=clamp(t[1],FX0,FX1);me.y=clamp(t[2],FY0,FY1);}lastTp=t[0];}
  const stunned=mi>=0&&snap.st&&snap.st[mi]>0;
- const canMove=snap&&snap.ph==='play'&&mi>=0&&!stunned;
+ const canMove=snap&&snap.ph==='play'&&mi>=0&&!stunned&&!isPaused();
+ updatePauseUI(mi);
  let ix=0,iy=0;
  if(keys.ArrowLeft||keys.KeyA)ix-=1;if(keys.ArrowRight||keys.KeyD)ix+=1;if(keys.ArrowUp||keys.KeyW)iy-=1;if(keys.ArrowDown||keys.KeyS)iy+=1;
  pollPad();ix+=pad.x;iy+=pad.y;
@@ -1251,7 +1315,7 @@ function sanitizeSnap(s){
  const r=arr(s.r).filter(x=>typeof x==='string').slice(0,4);
  const n=r.length;
  const fill=a=>{const o=arr(a).map(num).slice(0,n);while(o.length<n)o.push(0);return o;};
- return{ph,T:TIME_OPTS.includes(s.T)?s.T:60000,cd:num(s.cd),tl:num(s.tl),r,nm:arr(s.nm).slice(0,n).map(x=>String(x||'Pemain').slice(0,10)),sc:fill(s.sc),st:fill(s.st),iv:fill(s.iv),sk:fill(s.sk),cn:fill(s.cn),
+ return{ph,pz:typeof s.pz==='number'&&s.pz>=0&&s.pz<4?s.pz|0:-1,T:TIME_OPTS.includes(s.T)?s.T:60000,cd:num(s.cd),tl:num(s.tl),r,nm:arr(s.nm).slice(0,n).map(x=>String(x||'Pemain').slice(0,10)),sc:fill(s.sc),st:fill(s.st),iv:fill(s.iv),sk:fill(s.sk),cn:fill(s.cn),
   L:arr(s.L).slice(0,LAMPS.length).map(v=>clamp(num(v)|0,0,3)),
   b:arr(s.b).slice(0,4).map(x=>Array.isArray(x)?x.slice(0,5).map(num):0),
   lf:fill(s.lf).map(v=>clamp(v,0,SKY)),
@@ -1276,7 +1340,7 @@ function showBanner(text,col,dur=1600){banner={text,col,t0:performance.now(),dur
 function view(now){
  if(!snap)return null;
  const s=snap;const v={ph:s.ph,r:s.r||[],nm:s.nm||[],sc:s.sc||[],st:s.st||[],iv:s.iv||[],sk:s.sk||[],cn:s.cn||[]};
- const el=role==='client'?now-snapT:0;
+ const el=role==='client'&&!isPaused()?now-snapT:0;
  v.tl=s.ph==='play'?Math.max(0,(s.tl||0)-el):(s.tl||0);
  v.cd=s.ph==='count'?Math.max(0,(s.cd||0)-el):0;
  const a=clamp(el/70,0,1);
@@ -1710,7 +1774,7 @@ function updateUI(now){
  if(!snap)return;
  const v=snap;
  if(v.ph==='play'||v.ph==='count'||v.ph==='end'){
-  const tl=v.ph==='play'?Math.max(0,v.tl-(role==='client'?now-snapT:0)):(v.ph==='end'?0:(v.T||ROUND_MS));
+  const tl=v.ph==='play'?Math.max(0,v.tl-(role==='client'&&!isPaused()?now-snapT:0)):(v.ph==='end'?0:(v.T||ROUND_MS));
   const sec=Math.ceil(tl/1000);
   const mi=myIdx();
   const chips=(v.r||[]).map((p,i)=>`<div class="chip${i===mi?' me':''}"><span class="sw" style="background:${PCOL[i][0]}"></span><span class="nm">${esc(v.nm[i]||'')}</span><span class="sc">${v.sc[i]||0}</span></div>`);
@@ -1785,6 +1849,10 @@ function frame(now){
  }catch(e){console.error(e);}
  requestAnimationFrame(frame);
 }
+initNet();
+// ---- version labels follow APP_VERSION ----
+document.querySelectorAll('.verBy').forEach(e=>e.textContent='by Bazli · v'+APP_VERSION);
+document.querySelectorAll('.verOnly').forEach(e=>e.textContent='v'+APP_VERSION);
 requestAnimationFrame(frame);
 </script>
 </body>
