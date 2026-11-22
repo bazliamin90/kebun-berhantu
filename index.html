@@ -107,7 +107,7 @@ td.n{text-align:right;color:#ffd166}
   <div><div class="bigTitle"><span>KEBUN</span><span>BERHANTU</span></div>
   <div class="tag">Kutip buah. Elak hantu. Jangan menangis.</div></div>
   <div style="text-align:center"><div class="tap">TAP TO START</div>
-  <div class="credit" style="margin-top:10px">by Bazli · v1.0</div></div>
+  <div class="credit" style="margin-top:10px">by Bazli · v1.1</div></div>
 </div></div>
 
 <!-- LOADING -->
@@ -115,21 +115,21 @@ td.n{text-align:right;color:#ffd166}
   <img id="loadImg" class="spin" alt="">
   <div class="sub" id="loadMsg" style="min-height:30px;margin-top:10px">Memuatkan kebun...</div>
   <div class="bar"><div id="loadFill"></div></div>
-  <div class="small" style="margin-top:10px">v1.0</div>
+  <div class="small" style="margin-top:10px">v1.1</div>
 </div></div>
 
 <!-- MAIN MENU -->
 <div id="menu" class="overlay"><div class="panel menuPanel">
   <h1>KEBUN<br>BERHANTU</h1>
   <div class="sub">Musim buah dah tiba... tapi hantu pun keluar waktu senja.</div>
-  <div class="row"><label for="nameIn">NAMA</label><input id="nameIn" maxlength="10" style="width:150px"></div>
+  <div class="row"><label for="nameIn">NAMA</label><input id="nameIn" maxlength="10" autocomplete="off" autocorrect="off" spellcheck="false" style="width:150px"></div>
   <div class="col">
     <button id="soloBtn">SINGLE</button>
     <button id="mpBtn" class="alt">MULTIPLAYER</button>
     <button id="tutBtn" class="alt">TUTORIAL</button>
     <button id="optBtn" class="alt">OPTION</button>
   </div>
-  <div class="credit2">by Bazli · v1.0</div>
+  <div class="credit2">by Bazli · v1.1</div>
 </div></div>
 
 <!-- MULTIPLAYER -->
@@ -142,12 +142,12 @@ td.n{text-align:right;color:#ffd166}
   </div>
   <div id="mpHost" style="display:none">
     <div class="small" style="text-align:center">Kod bilik kamu:</div>
-    <div class="row"><input id="hostCodeIn" maxlength="10" style="width:170px;text-align:center;letter-spacing:2px;font-size:12px"><button id="diceBtn" class="alt" title="Tukar kod">🎲</button></div>
+    <div class="row"><input id="hostCodeIn" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" style="text-transform:uppercase;width:170px;text-align:center;letter-spacing:2px;font-size:12px"><button id="diceBtn" class="alt" title="Tukar kod">🎲</button></div>
     <div class="row"><button id="hostBtn">BUKA BILIK</button></div>
   </div>
   <div id="mpJoin" style="display:none">
     <div class="small" style="text-align:center">Masukkan kod dari hos:</div>
-    <div class="row"><input id="codeIn" maxlength="10" placeholder="cth. TOYOL27" style="width:170px;text-align:center;text-transform:uppercase;letter-spacing:2px;font-size:12px"></div>
+    <div class="row"><input id="codeIn" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="cth. TOYOL27" style="width:170px;text-align:center;text-transform:uppercase;letter-spacing:2px;font-size:12px"></div>
     <div class="row"><button id="joinBtn">SERTAI</button></div>
   </div>
   <div id="netStatus" class="status">Menyambung... / Connecting...</div>
@@ -627,7 +627,7 @@ async function openNet(c,asHost){
 }
 // ---- Standalone multiplayer (outside Claude): WebRTC via PeerJS, same interface as the room capability ----
 // The host's browser is the hub: it collects everyone's presence and re-broadcasts the whole set ~20x/second.
-const APP_VERSION='1.0';
+const APP_VERSION='1.1';
 function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=rej;document.head.appendChild(el);});}
 async function makePeerRoom(){
  if(!window.Peer)await loadScript('https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js');
@@ -744,8 +744,11 @@ $('soloGoBtn').onclick=soloGame;
 $('hostBtn').onclick=hostGame;
 $('joinBtn').onclick=joinGame;
 $('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame();});
-$('codeIn').addEventListener('input',e=>{e.target.value=normCode(e.target.value);});
-$('hostCodeIn').addEventListener('input',e=>{e.target.value=normCode(e.target.value);});
+// Don't rewrite the box while the person is typing: phone keyboards (suggestions / autocorrect)
+// lose or replace the word in progress if the page changes the text under them.
+// The code is cleaned up (capitals, letters & numbers only) when the box is left or submitted.
+['codeIn','hostCodeIn'].forEach(id=>{const el=$(id);
+ el.addEventListener('blur',()=>{const v=normCode(el.value);if(el.value!==v)el.value=v;});});
 $('hostCodeIn').addEventListener('keydown',e=>{if(e.key==='Enter')hostGame();});
 function openMp(){showOv('mp');$('mpHost').style.display='none';$('mpJoin').style.display='none';}
 $('mpBtn').onclick=()=>{au();openMp();if(roomNs)setStatus('Online sedia. Pilih HOST atau JOIN. (Online ready)');else initNet();};
